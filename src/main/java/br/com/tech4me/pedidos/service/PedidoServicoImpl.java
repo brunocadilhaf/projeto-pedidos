@@ -12,6 +12,7 @@ import br.com.tech4me.pedidos.model.Pizza;
 import br.com.tech4me.pedidos.repository.PedidoRepository;
 import br.com.tech4me.pedidos.shared.PedidoCompletoDto;
 import br.com.tech4me.pedidos.shared.PedidoDto;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
 @Service
 public class PedidoServicoImpl implements PedidoServico {
@@ -37,6 +38,7 @@ public class PedidoServicoImpl implements PedidoServico {
             .toList();
     }
 
+    @CircuitBreaker(name = "obterPizza", fallbackMethod = "fallbackPedidosPorId")
     @Override
     public Optional<PedidoDto> obterPedidosPorId(String id) {
         Optional<Pedido> pedido = repositorio.findById(id);
@@ -49,6 +51,18 @@ public class PedidoServicoImpl implements PedidoServico {
             return Optional.empty();
         }
     }
+
+    public Optional<PedidoDto> fallbackPedidosPorId(String id, Exception e) {
+        Optional<Pedido> pedido = repositorio.findById(id);
+
+        if (pedido.isPresent()) {
+            PedidoDto pedidoComPizza = new PedidoDto(pedido.get().getNomeCliente(), pedido.get().getIdPizza(), null, pedido.get().getValor());
+            return Optional.of(pedidoComPizza);
+        } else {
+            return Optional.empty();
+        }
+    }
+    
 
     @Override
     public void excluirPedido(String id) {
