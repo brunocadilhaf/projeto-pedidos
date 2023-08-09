@@ -7,7 +7,6 @@ import br.com.tech4me.pedidos.shared.PedidoCompletoDto;
 import br.com.tech4me.pedidos.shared.PedidoDto;
 
 @Document("pedidos")
-
 public class Pedido {
     @Id
     private String id;
